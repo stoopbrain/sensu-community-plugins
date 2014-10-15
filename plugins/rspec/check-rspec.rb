@@ -89,7 +89,6 @@ class CheckRspec < Sensu::Plugin::Check::CLI
 
       if rspec_test['status'] == 'passed'
         send_ok(test_name, output)
-        puts "PASS: #{output}, File: #{test_name}"
       else
         send_warning(test_name, output)
         puts "FAIL: #{output}, File: #{test_name}, Message: #{message}" unless status == 'pending'
