@@ -84,11 +84,15 @@ class CheckRspec < Sensu::Plugin::Check::CLI
     parsed['examples'].each do |rspec_test|
       test_name = rspec_test['file_path'].split('/')[-1] + '_' + rspec_test['line_number'].to_s
       output    = rspec_test['full_description']
+      status    = rspec_test['status']
+      message   = rspec_test['exception']['message'] if rspec_test['exception']
 
       if rspec_test['status'] == 'passed'
         send_ok(test_name, output)
+        puts "PASS: #{output}, File: #{test_name}"
       else
         send_warning(test_name, output)
+        puts "FAIL: #{output}, File: #{test_name}, Message: #{message}" unless status == 'pending'
       end
     end
 
