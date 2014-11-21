@@ -8,21 +8,20 @@ RSpec.describe VarnishHealthCheck do
     let(:varnish_health) { VarnishHealthCheck.new }
     let(:responses) { varnish_health.health_responses(graphite_response) }
 
-    it 'should get a maximum fail duration if all checks failed' do
-      puts "responses: #{responses}"
-      expect(responses[0]).to eq(['dawkins_query', 'betd-id87a2a9a', 5.0])
+    it 'should get the maximum fail duration when all checks failed' do
+      expect(responses[0]).to eq ['dawkins_query', 'betd-id87a2a9a', 5.0]
     end
 
-    it 'should get no fail duration when checks failed some of the time, but not most recently' do
-      expect(responses[1]).to eq(['minerva', 'betd-id87a2a9a', 0.0])
+    it 'should get no fail duration when the checks that failed did not include the most recent sample' do
+      expect(responses[1]).to eq ['minerva', 'betd-id87a2a9a', 0.0]
     end
 
-    it 'should get a fail duration corresponding to the number of concurrent failures when checks failed most recently' do
-      expect(responses[2]).to eq(['venus', 'betd-id87a2a9a', 2.0])
+    it 'should get a fail duration corresponding to the number of consecutive failures when the checks that failed include the most recent sample' do
+      expect(responses[2]).to eq ['venus', 'betd-id87a2a9a', 2.0]
     end
 
     it 'should get no fail duration when all checks passed' do
-      expect(responses[3]).to eq(['vogue_query', 'betd-id87a2a9a', 0.0])
+      expect(responses[3]).to eq ['vogue_query', 'betd-id87a2a9a', 0.0]
     end
 
     it 'should distinguish between traffic directors for the same service' do

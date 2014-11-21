@@ -4,7 +4,7 @@
 #   Collect Varnish backend health stats from graphite.
 #
 # OUTPUT:
-#   json
+#   array per varnish backend
 
 
 require 'httparty'
@@ -28,10 +28,8 @@ class VarnishHealthCheck
 
   def unhealthy_period(datapoints)
     most_recent_datapoint_time = datapoints.last[1]
-    datapoints.reverse.each_with_index do |(datapoint, timestamp), index|
-      puts "index: #{index}"
-      puts "datapoint: #{datapoint}"
-      puts "timestamp: #{timestamp}"
+    datapoints.reverse_each do |(datapoint, timestamp)|
+      # puts "[timestamp: #{timestamp}, datapoint: #{datapoint}]"
       if healthy? datapoint
         return unhealthy_period_in_minutes(most_recent_datapoint_time, timestamp)
       end
@@ -50,19 +48,16 @@ class VarnishHealthCheck
   def health_responses(response)
     response.inject([]) do |result, node|
       graphite_series_name = node['target']
-      puts "graphite_series_name: #{graphite_series_name}"
+      # puts "graphite_series_name: #{graphite_series_name}"
 
-      microservice = microservice_name graphite_series_name
-      # puts "microservice: #{microservice}"
-
+      microservice     = microservice_name graphite_series_name
       traffic_director = traffic_director_instance graphite_series_name
-      # puts "traffic_director: #{traffic_director}"
 
       datapoints                    = node['datapoints']
       microservice_unhealthy_period = unhealthy_period datapoints
 
       # puts "microservice_unhealthy_period: #{microservice_unhealthy_period}"
-      puts '------------------------------'
+      # puts '------------------------------'
       result << [microservice, traffic_director, microservice_unhealthy_period]
     end
   end
