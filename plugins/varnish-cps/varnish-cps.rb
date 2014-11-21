@@ -28,7 +28,7 @@ class VarnishHealthCheck
 
   def unhealthy_period(datapoints)
     most_recent_datapoint_time = datapoints.last[1]
-    datapoints.reverse_each do |(datapoint, timestamp)|
+    datapoints.reverse_each do |datapoint, timestamp|
       # puts "[timestamp: #{timestamp}, datapoint: #{datapoint}]"
       if healthy? datapoint
         return unhealthy_period_in_minutes(most_recent_datapoint_time, timestamp)
