@@ -1,18 +1,25 @@
 #!/usr/bin/env ruby
 #
 # DESCRIPTION:
-#   Collect Varnish backend health stats from graphite.
+#   Collect Varnish backend health stats from graphite. We deem a backend to be
+#   unhealthy if it has failed in the most recent check. If so we look back and
+#   return how long it has been unhealthy.
+#
+#   Such an approach assumes that we are running this as often as `check_resolution`
 #
 # OUTPUT:
-#   array per varnish backend
+#   array per varnish backend: [<backend_name>, <traffic_director_name>, <failed_duration_in_minutes>]
 
 
 require 'httparty'
 
 # time_period = '6hours'
 time_period = '5minutes'
+check_resolution = '1minute'
 
-graphite_function = "summarize(exclude(*.varnish.VBE.*.happy,',*dummy'),'1minute','min')"
+# The varnish metric goes to zero when a backend is taken out of service.
+# summarize with 'min' ensures we get any failures in the time bucket.
+graphite_function = "summarize(exclude(*.varnish.VBE.*.happy,',*dummy'),#{check_resolution},'min')"
 graphite_url = "http://graphite.sit.cps.awseuwest1.itvcloud.zone/render?target=#{graphite_function}&format=json&from=-#{time_period}"
 
 class VarnishHealthCheck
